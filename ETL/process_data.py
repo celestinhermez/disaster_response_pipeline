@@ -55,8 +55,16 @@ def clean_data(df):
     return(df)
 
 def save_data(df, database_filename):
-    pass  
+    '''
+    Stores the dataframe to a SQLLite database
 
+    :param df: the dataframe which we want to save to a SQLLite database
+    :param database_filename: the name of the database where we want to store our dataframe
+    :return: None
+    '''
+
+    engine = create_engine('sqlite:///'+ database_filename)
+    df.to_sql = ('messages_categorized', engine, index=False)
 
 def main():
     if len(sys.argv) == 4:
