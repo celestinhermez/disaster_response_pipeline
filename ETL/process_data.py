@@ -1,7 +1,6 @@
 import sys
 import pandas as pd
 from sqlalchemy import create_engine
-import numpy as np
 
 def load_data(messages_filepath, categories_filepath):
     '''
@@ -15,8 +14,8 @@ def load_data(messages_filepath, categories_filepath):
     :return: tw
     '''
 
-    messages = pd.read_csv('messages.csv')
-    categories = pd.read_csv('categories.csv')
+    messages = pd.read_csv(messages_filepath)
+    categories = pd.read_csv(categories_filepath)
 
     df = messages.merge(categories, on ='id', how='inner')
 
