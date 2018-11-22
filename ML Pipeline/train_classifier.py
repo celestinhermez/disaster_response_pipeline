@@ -42,7 +42,22 @@ def load_data(database_filepath):
     return X, Y, category_names
 
 def tokenize(text):
-    pass
+    # We first normalize the test
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
+    tokens = word_tokenize(text)
+
+    # Then we remove stopwords
+    tokens = [w for w in tokens if w not in stopwords.words("english")]
+
+    # We instantiate our lemmatizer and apply it to all of our tokens
+    lemmatizer = WordNetLemmatizer()
+
+    clean_tokens = []
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).strip()
+        clean_tokens.append(clean_tok)
+
+    return clean_tokens
 
 
 def build_model():
