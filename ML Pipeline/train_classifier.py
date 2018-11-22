@@ -24,8 +24,22 @@ from nltk.corpus import stopwords
 
 
 def load_data(database_filepath):
-    pass
+    '''
 
+    :param database_filepath: the filepath to the database where the cleaned dataset was uploaded
+    :return:
+            X (df): our input message
+            Y (df): the target categories
+            category_names (list): a list of all the target category names
+    '''
+
+    engine = create_engine('sqlite:///' + database_filepath)
+    df = pd.read_sql_table('messages_categorized', engine)
+    X = df.message
+    Y = df.iloc[:, 4:]
+    category_names = Y.columns.values.tolist()
+
+    return X, Y, category_names
 
 def tokenize(text):
     pass
