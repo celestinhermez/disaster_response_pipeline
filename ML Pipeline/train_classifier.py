@@ -16,7 +16,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble.forest import RandomForestClassifier
 from sklearn.svm import SVC
-from sklearn.metrics import classification_report, precision_recall_fscore_support
+from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score
 
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -78,11 +78,33 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    # We obtain the predictions from our model
+    y_pred = model.predict(X_test)
+
+    # We create a loop to display the precision, recall, F1-score for each category as well as overall
+    target_names = ['Negative', 'Positive']
+    accuracy_list = []
+    precision_list = []
+    recall_list = []
+    for i in range(y_pred.shape[1]):
+        precision, recall, _, _ = precision_recall_fscore_support(Y_test.iloc[:, i], y_pred[:, i],
+                                                                  average='weighted', target_names=target_names)
+        accuracy = accuracy_score(Y_test.iloc[:, i], y_pred[:, i])
+        precision_list.append(precision)
+        recall_list.append(recall)
+        accuracy_list.append(accuracy)
+
+        print('For the category: {}, \n'.format(category_names[i]))
+        print('The accuracy is: {} \n'.format(accuracy))
+        print(classification_report(Y_test.iloc[:, i], y_pred[:, i]))
+
+    print('Overall accuracy is: {}'.format(np.array(accuracy).mean()))
+    print('Overall precision is: {}'.format(np.array(precision).mean()))
+    print('Overall recall is: {}'.format(np.array(recall).mean()))
 
 
 def save_model(model, model_filepath):
-    pass
+    pickle.dump(model, model_filepath)
 
 
 def main():
