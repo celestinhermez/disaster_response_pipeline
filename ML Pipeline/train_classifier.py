@@ -61,7 +61,20 @@ def tokenize(text):
 
 
 def build_model():
-    pass
+    # We first build our pipeline
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(estimator=RandomForestClassifier()))
+    ])
+
+    # Then we iterate over different hyperparameters with GridSearch and return the GridSearch object
+    parameters = {'clf__estimator': (RandomForestClassifier(), GradientBoostingClassifier(), SVC()),
+                  'vect__ngram_range': ((1, 1), (1, 2)),
+                  'vect__max_df': (0.5, 0.75, 1.0)}
+    cv = GridSearchCV(pipeline, param_grid=parameters)
+
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
