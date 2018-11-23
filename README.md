@@ -11,6 +11,8 @@ Creation of an ETL and Machine Learning pipeline to build a model
  
  What is the goal of this?
  
+ Examples for each script
+ 
  Specify web app is not deployed, clone the repo and use run the 
  web app, and then see the graphs.
 
