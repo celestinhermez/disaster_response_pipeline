@@ -1,5 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from textblob import TextBlob
+import pandas as pd
 
 class MessageLanguage(BaseEstimator, TransformerMixin):
 

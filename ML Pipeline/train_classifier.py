@@ -71,8 +71,8 @@ def build_model():
     # Then we iterate over different hyperparameters with GridSearch and return the GridSearch object
     parameters = {'clf__estimator__max_depth': (None, 10, 20),
                   'clf__estimator__n_estimators': (5, 10, 20),
-                  'tfidf__smooth_idf': (True, False),
-                  'vect__max_df': (0.5, 0.75, 1.0)}
+                  'features__text_pipeline__tfidf__smooth_idf': (True, False),
+                  'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0)}
 
     cv = GridSearchCV(pipeline, param_grid=parameters, n_jobs=-1)
 
