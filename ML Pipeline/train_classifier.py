@@ -7,15 +7,14 @@ import pickle
 nltk.download(['punkt', 'wordnet', 'stopwords'])
 
 from sqlalchemy import create_engine
+from message_language import MessageLanguage
 
 
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble.forest import RandomForestClassifier
-from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score
 
 from nltk.tokenize import word_tokenize
@@ -59,8 +58,13 @@ def tokenize(text):
 def build_model():
     # We first build our pipeline
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize, stop_words='english')),
-        ('tfidf', TfidfTransformer()),
+        ('features', FeatureUnion([
+            ('language', MessageLanguage()),
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize, stop_words='english')),
+                ('tfidf', TfidfTransformer())
+            ]))
+        ])),
         ('clf', MultiOutputClassifier(estimator=RandomForestClassifier()))
     ])
 
