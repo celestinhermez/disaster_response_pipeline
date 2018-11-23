@@ -13,14 +13,13 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble.forest import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score
 
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
 
 
 def load_data(database_filepath):
@@ -46,9 +45,6 @@ def tokenize(text):
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     tokens = word_tokenize(text)
 
-    # Then we remove stopwords
-    tokens = [w for w in tokens if w not in stopwords.words("english")]
-
     # We instantiate our lemmatizer and apply it to all of our tokens
     lemmatizer = WordNetLemmatizer()
 
@@ -63,16 +59,18 @@ def tokenize(text):
 def build_model():
     # We first build our pipeline
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('vect', CountVectorizer(tokenizer=tokenize, stop_words='english')),
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(estimator=RandomForestClassifier()))
     ])
 
     # Then we iterate over different hyperparameters with GridSearch and return the GridSearch object
-    parameters = {'clf__estimator': (RandomForestClassifier(), GradientBoostingClassifier(), SVC()),
-                  'vect__ngram_range': ((1, 1), (1, 2)),
+    parameters = {'clf__estimator__max_depth': (None, 10, 20),
+                  'clf__estimator__n_estimators': (5, 10, 20),
+                  'tfidf__smooth_idf': (True, False),
                   'vect__max_df': (0.5, 0.75, 1.0)}
-    cv = GridSearchCV(pipeline, param_grid=parameters)
+
+    cv = GridSearchCV(pipeline, param_grid=parameters, n_jobs=-1)
 
     return cv
 
@@ -88,7 +86,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
     recall_list = []
     for i in range(y_pred.shape[1]):
         precision, recall, _, _ = precision_recall_fscore_support(Y_test.iloc[:, i], y_pred[:, i],
-                                                                  average='weighted', target_names=target_names)
+                                                                  average='weighted')
         accuracy = accuracy_score(Y_test.iloc[:, i], y_pred[:, i])
         precision_list.append(precision)
         recall_list.append(recall)
@@ -96,7 +94,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
         print('For the category: {}, \n'.format(category_names[i]))
         print('The accuracy is: {} \n'.format(accuracy))
-        print(classification_report(Y_test.iloc[:, i], y_pred[:, i]))
+        print(classification_report(Y_test.iloc[:, i], y_pred[:, i], target_names=target_names))
 
     print('Overall accuracy is: {}'.format(np.array(accuracy).mean()))
     print('Overall precision is: {}'.format(np.array(precision).mean()))
