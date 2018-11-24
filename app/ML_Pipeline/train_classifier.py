@@ -19,6 +19,7 @@ from sklearn.metrics import classification_report, precision_recall_fscore_suppo
 
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
 
 
 def load_data(database_filepath):
@@ -40,9 +41,17 @@ def load_data(database_filepath):
     return X, Y, category_names
 
 def tokenize(text):
+    '''
+    :param text: a string of text
+    :return: a list of tokens for the text which has been normalized, stripped of stop words, tokenized and lemmatized
+    '''
+
     # We first normalize the test
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     tokens = word_tokenize(text)
+
+    # Then we remove stopwords
+    tokens = [w for w in tokens if w not in stopwords.words("english")]
 
     # We instantiate our lemmatizer and apply it to all of our tokens
     lemmatizer = WordNetLemmatizer()
@@ -53,7 +62,6 @@ def tokenize(text):
         clean_tokens.append(clean_tok)
 
     return clean_tokens
-
 
 def build_model():
     # We first build our pipeline
@@ -99,9 +107,9 @@ def evaluate_model(model, X_test, Y_test, category_names):
         print('The accuracy is: {} \n'.format(accuracy))
         print(classification_report(Y_test.iloc[:, i], y_pred[:, i], target_names=target_names))
 
-    print('Overall accuracy is: {}'.format(np.array(accuracy).mean()))
-    print('Overall precision is: {}'.format(np.array(precision).mean()))
-    print('Overall recall is: {}'.format(np.array(recall).mean()))
+    print('Overall (average) accuracy is: {}'.format(np.array(accuracy).mean()))
+    print('Overall (average) precision is: {}'.format(np.array(precision).mean()))
+    print('Overall (average) recall is: {}'.format(np.array(recall).mean()))
 
 
 def save_model(model, model_filepath):

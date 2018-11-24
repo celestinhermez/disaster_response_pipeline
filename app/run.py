@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from ML_Pipeline.train_classifier import tokenize
 import message_language
 import pickle
+from collections import Counter
 
 app = Flask(__name__)
 
@@ -20,43 +21,82 @@ df = pd.read_sql_table('messages_categorized', engine)
 # load model
 model = pickle.load(open('ML_Pipeline/classifier.pkl', 'rb'))
 
+def return_figures():
+    """Creates two plotly visualizations on our training data
+
+          Args:
+              none
+
+          Returns:
+              list (dict): list containing the two plotly visualizations
+
+        """
+
+    # We first visualize the most common categories over all of our messages
+    graph_one = []
+
+    # extract data needed for visuals
+    category_sum = df.iloc[:, 1:].select_dtypes(include=['number']).apply(sum, axis=0)
+    top_categories = category_sum.sort_values(ascending=False)[:5].values.tolist()
+    category_names = category_sum.sort_values(ascending=False)[:5].index.tolist()
+
+    # create visuals
+    graph_one.append(
+        Bar(
+            x=category_names,
+            y=top_categories
+        )
+    )
+
+    layout_one = dict(title='Top 5 Most Common Categories',
+                      xaxis=dict(title='Category'),
+                      yaxis=dict(title='Count'),
+                      )
+
+    # Our second visualization will display the top 10 tokens in the messages
+    graph_two = []
+
+    # We extract the data necessary
+    tokens = []
+    df.message.apply(lambda x: [tokens.append(y) for y in tokenize(x)])
+    top_tuples = Counter(tokens).most_common(10)
+
+    words = []
+    counts = []
+
+    for word, count in top_tuples:
+        words.append(word)
+        counts.append(count)
+
+    # create visuals
+    graph_two.append(
+        Bar(
+            x=words,
+            y=counts
+        )
+    )
+
+    layout_two = dict(title='Top 10 Most Common Words in Messages',
+                      xaxis=dict(title='Word'),
+                      yaxis=dict(title='Count'),
+                      )
+
+    figures = list()
+    figures.append(dict(data=graph_one, layout=layout_one))
+    figures.append(dict(data=graph_two, layout=layout_two))
+
+    return figures
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
 @app.route('/index')
 def index():
-    
-    # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
-    genre_counts = df.groupby('genre').count()['message']
-    genre_names = list(genre_counts.index)
-    
-    # create visuals
-    # TODO: Below is an example - modify to create your own visuals
-    graphs = [
-        {
-            'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
-                )
-            ],
 
-            'layout': {
-                'title': 'Distribution of Message Genres',
-                'yaxis': {
-                    'title': "Count"
-                },
-                'xaxis': {
-                    'title': "Genre"
-                }
-            }
-        }
-    ]
+    figures = return_figures()
     
     # encode plotly graphs in JSON
-    ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
-    graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+    ids = ["graph-{}".format(i) for i, _ in enumerate(figures)]
+    graphJSON = json.dumps(figures, cls=plotly.utils.PlotlyJSONEncoder)
     
     # render web page with plotly graphs
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
