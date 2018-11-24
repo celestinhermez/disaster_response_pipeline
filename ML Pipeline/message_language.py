@@ -1,16 +1,23 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from textblob import TextBlob
+from langdetect import detect, DetectorFactory
 import pandas as pd
+
+# We want to make the language detection deterministic
+DetectorFactory.seed = 0
 
 class MessageLanguage(BaseEstimator, TransformerMixin):
 
     def message_language(self, text):
-        blob = TextBlob(text)
-        lang = blob.detect_language()
+        # We catch the exceptions where langdetect cannot detect a language and assume it is not english
+        try:
+            lang = detect(text)
 
-        if lang == 'en':
-            english = 1
-        else:
+            if lang == 'en':
+                english = 1
+            else:
+                english = 0
+
+        except:
             english = 0
 
         return english

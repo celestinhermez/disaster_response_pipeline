@@ -70,7 +70,6 @@ def build_model():
 
     # Then we iterate over different hyperparameters with GridSearch and return the GridSearch object
     parameters = {'clf__estimator__max_depth': (None, 10, 20),
-                  'clf__estimator__n_estimators': (5, 10, 20),
                   'features__text_pipeline__tfidf__smooth_idf': (True, False),
                   'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0)}
 
@@ -106,7 +105,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    pickle.dump(model, model_filepath)
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
