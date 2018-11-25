@@ -5,7 +5,6 @@ import pandas as pd
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
 from sqlalchemy import create_engine
 from ML_Pipeline.train_classifier import tokenize
 import message_language
@@ -91,7 +90,6 @@ def return_figures():
 @app.route('/')
 @app.route('/index')
 def index():
-
     figures = return_figures()
     
     # encode plotly graphs in JSON
